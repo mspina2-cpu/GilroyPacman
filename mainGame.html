@@ -99,6 +99,41 @@
       font-size: 13px;
       opacity: 0.85;
     }
+
+    .touch-controls {
+      display: grid;
+      grid-template-columns: 64px 64px 64px;
+      grid-template-rows: 64px 64px;
+      gap: 8px;
+      justify-content: center;
+      align-items: center;
+      margin-top: 4px;
+      user-select: none;
+      touch-action: manipulation;
+    }
+
+    .touch-btn {
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      font-size: 30px;
+      line-height: 1;
+      display: grid;
+      place-items: center;
+      background: #ffd54a;
+      color: #111;
+      box-shadow: 0 4px 0 #b88916;
+    }
+
+    .touch-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #b88916;
+    }
+
+    .touch-up { grid-column: 2; grid-row: 1; }
+    .touch-left { grid-column: 1; grid-row: 2; }
+    .touch-down { grid-column: 2; grid-row: 2; }
+    .touch-right { grid-column: 3; grid-row: 2; }
   </style>
 </head>
 <body>
@@ -112,10 +147,17 @@
 
     <canvas id="game" width="558" height="414" aria-label="Pac-Man style game"></canvas>
 
-    <div class="message" id="message">Use arrow keys or WASD to move.</div>
+    <div class="message" id="message">Use arrow keys, WASD, or the buttons below to move.</div>
+
+    <div class="touch-controls" aria-label="Mobile movement controls">
+      <button class="touch-btn touch-up" data-dir="up" aria-label="Move up">▲</button>
+      <button class="touch-btn touch-left" data-dir="left" aria-label="Move left">◀</button>
+      <button class="touch-btn touch-down" data-dir="down" aria-label="Move down">▼</button>
+      <button class="touch-btn touch-right" data-dir="right" aria-label="Move right">▶</button>
+    </div>
 
     <div class="controls">
-      <div><strong>Controls:</strong> Arrow keys / WASD</div>
+      <div><strong>Controls:</strong> Arrow keys / WASD / touch buttons</div>
       <div class="legend">Eat all pellets. Power pellets let you eat ghosts for a short time.</div>
     </div>
   </div>
@@ -147,27 +189,27 @@
         powerTime: 80,
         map: [
           "###############################",
-          "#o.............#.............o#",
-          "#.###.####.###.#.###.####.###.#",
-          "#.............................#",
+          "#o.....     .#.....     .....o#",
+          "#.###.#### ###.#.### ####.###.#",
+          "#.....     ..... .....     ...#",
           "#.###.#.###########.#.###.#.###",
-          "#.....#.....#.#.....#.....#...#",
-          "###.#.#####.#.#.#####.#.###.#.#",
-          "#.............................#",
-          "#...###.###.#...##..###.#.#...#",
-          "#...#....#..#...#.#.#.#.#.#...#",
-          "#...#.#..#..#...##..#.#..#....#",
-          "#...#.#..#..#...#.#.#.#..#....#",
-          "#...###.###.###.#.#.###..#....#",
-          "#.............................#",
-          "#.###.#.#####.###.#####.#.###.#",
-          "#.....#...G...G.G...G...#.....#",
-          "#####.###.###-###.###.###.#####",
-          "#.............P...............#",
-          "#.###.####.###.#.###.####.###.#",
-          "#o..#.....................#..o#",
-          "###.#.#.###########.#.#.#.#.###",
-          "#.....#.............#.....#...#",
+          "#.....#     # #     #.....#   #",
+          "### # ##### # # ##### # ### # #",
+          "#.....     ..... .....     ...#",
+          "#   ### ### #   ##  ### # #   #",
+          "#   #    #  #   # # # # # #   #",
+          "#   # #  #  #   ##  # #  #    #",
+          "#   # #  #  #   # # # #  #    #",
+          "#   ### ### ### # # ###  #    #",
+          "#.....     ..... .....     ...#",
+          "#.### # ##### ### ##### # ###.#",
+          "#.....#   G   G G   G   #.....#",
+          "##### ### ###-### ### ### #####",
+          "#.....     ..P..     .........#",
+          "#.### #### ###.#.### ####.###.#",
+          "#o  #.....     .....     .#  o#",
+          "### # # ########### # # # # ###",
+          "#.....#.....     .....#.....  #",
           "###############################"
         ]
       },
@@ -593,10 +635,23 @@
 
     restartBtn.addEventListener('click', init);
 
+    document.querySelectorAll('.touch-btn').forEach(button => {
+      const move = () => {
+        if (!state || state.gameOver) return;
+        state.pacman.nextDir = button.dataset.dir;
+      };
+
+      button.addEventListener('click', move);
+      button.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        move();
+      }, { passive: false });
+    });
+
     function init() {
       currentLevelIndex = 0;
       state = makeGameState();
-      setMessage('Use arrow keys or WASD to move.');
+      setMessage('Use arrow keys, WASD, or the buttons below to move.');
       updateHUD();
     }
 
